@@ -1,88 +1,119 @@
-
-        .card {
-            background: #1e293b;
-            padding: 20padding: 20px;px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-
-        .btn {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 12px 18px;
-            background: #22c55e;
-            color: white;
-            text-decoration: none;
-            border-radius: 10px;
-            font-weight: bold;
-        }
-
-        .btn:hover {
-            background: #16a34a;
-        }
-
-        footer {
-            margin-top: 30px;
-            padding: 20px;
-            color: #94a3b8;
-        }
-    </style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>P2P Telegram Alerts</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: #1e293b;
+      padding: 1.5rem;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 350px;
+    }
+    h3 { margin-top: 0; text-align: center; }
+    label { font-size: 0.85rem; color: #94a3b8; }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0 15px 0;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #fff;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #22c55e;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #status { margin-top: 10px; text-align: center; font-size: 0.85rem; }
+  </style>
 </head>
-
 <body>
 
-<header>
-    <h1>🚀 Deriv Instant Pay Hub</h1>
-    <p>Fast access to trading tools & P2P services</p>
-</header>
+  <div class="card">
+    <h3>P2P Trade Alert</h3>
+    
+    <label>Order ID</label>
+    <input type="text" id="orderId" placeholder="e.g. #102938">
 
-<div class="container">
+    <label>Amount (USD/KES)</label>
+    <input type="text" id="amount" placeholder="e.g. $50 / KES 6,500">
 
-    <div class="card">
-        <h3>Deriv P2P</h3>
-        <p>Buy & sell funds instantly</p>
-        <a class="btn" href="https://p2p.deriv.com/orders" target="_blank">Open P2P</a>
-    </div>
+    <label>Payment Method</label>
+    <select id="paymentMethod">
+      <option value="M-Pesa">M-Pesa</option>
+      <option value="Bank Transfer">Bank Transfer</option>
+    </select>
 
-    <div class="card">
-        <h3>Trading Platform</h3>
-        <p>Access Deriv trading tools</p>
-        <a class="btn" href="https://app.deriv.com" target="_blank">Trade Now</a>
-    </div>
+    <button onclick="sendP2PAlert()">Send P2P Alert</button>
+    <div id="status"></div>
+  </div>
 
-    <div class="card">
-        <h3>Telegram Support</h3>
-        <p>Get help & updates</p>
-        <a class="btn" href="https://t.me/" target="_blank">Join Telegram</a>
-    </div>
+  <script>
+    const BOT_TOKEN = "7536734919:AAEkgyJfVPiCC250pM_UDHEk8sJyFX3buGQ";
+    const CHAT_ID = "6367881211";
 
-</div>
+    async function sendP2PAlert() {
+      const orderId = document.getElementById("orderId").value || "N/A";
+      const amount = document.getElementById("amount").value || "N/A";
+      const paymentMethod = document.getElementById("paymentMethod").value;
+      const statusDiv = document.getElementById("status");
 
-<footer>
-    © 2026 Deriv Hub | Built by p2p agency 
-</footer>
-<!-- your page content above -->
+      // Structured message format for P2P alerts
+      const message = `🚨 <b>NEW P2P ORDER ALERT</b>\n\n` +
+                      `<b>Order ID:</b> ${orderId}\n` +
+                      `<b>Amount:</b> ${amount}\n` +
+                      `<b>Payment:</b> ${paymentMethod}\n` +
+                      `<b>Status:</b> Pending Confirmation`;
 
+      statusDiv.style.color = "#38bdf8";
+      statusDiv.innerText = "Sending...";
 
-<script>
-function sendTelegramAlert(message) {
-    const token = "7536734919:AAEkgyJfVPiCC25OpM_UDHEk8sJyFX3buGQ";
-    const chatId = "6367881211";
+      try {
+        const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: CHAT_ID,
+            text: message,
+            parse_mode: "HTML"
+          })
+        });
 
-    const url = `https://api.telegram.org/bot${token}/sendMessage`;
+        const data = await response.json();
 
-    fetch(url, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            chat_id: chatId,
-            text: message
-        })
-    });
-}
-</script>
+        if (data.ok) {
+          statusDiv.style.color = "#4ade80";
+          statusDiv.innerText = "P2P Alert Sent!";
+        } else {
+          statusDiv.style.color = "#f87171";
+          statusDiv.innerText = "Error: " + data.description;
+        }
+      } catch (err) {
+        statusDiv.style.color = "#f87171";
+        statusDiv.innerText = "Network error.";
+      }
+    }
+  </script>
 
 </body>
 </html>
